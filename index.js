@@ -1,5 +1,3 @@
-
-
 //  web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyCfqNBAV7lgA9vYRxBvwxF5EGMZeqjrXgY",
@@ -26,6 +24,32 @@ let adminMode  = false;
 let formType   = 'lost';
 let editingId  = null;
 const MAX_IMAGE_SIZE_BYTES = 700 * 1024; // 700 KB safe limit for Firestore data URLs
+
+// ============================================================
+// POSTER TOKEN — identifies the browser that posted an item
+// ============================================================
+function getMyTokens() {
+  try {
+    return JSON.parse(localStorage.getItem('balik_my_tokens') || '[]');
+  } catch { return []; }
+}
+
+function saveMyToken(token) {
+  const tokens = getMyTokens();
+  if (!tokens.includes(token)) {
+    tokens.push(token);
+    localStorage.setItem('balik_my_tokens', JSON.stringify(tokens));
+  }
+}
+
+function isMyItem(item) {
+  if (!item.posterToken) return false;
+  return getMyTokens().includes(item.posterToken);
+}
+
+function generateToken() {
+  return 'tk_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
 // ============================================================
 // UTILITIES
@@ -229,7 +253,8 @@ function cardHTML(item) {
   const verifiedBadge = item.status === 'verified'
     ? `<span class="verified-badge">✔ Verified</span>` : '';
 
-  const claimBtn = (item.status !== 'claimed' && !adminMode)
+  // ── REVISED: Only poster or admin can claim ──
+  const claimBtn = (item.status !== 'claimed' && (adminMode || isMyItem(item)))
     ? `<button class="btn btn-outline btn-sm" onclick="claimItem('${item.id}')">🏷️ Claim</button>` : '';
 
   const adminBtns = adminMode && item.status !== 'removed' ? `
@@ -343,7 +368,9 @@ async function submitPost() {
   submitBtn.textContent = '⏳ Saving...';
   submitBtn.disabled = true;
 
-  const data = { type: formType, name, location, date, desc, contactName, contact, image: imageData, status: 'pending' };
+  // ── REVISED: generate a posterToken and save it to localStorage ──
+  const posterToken = generateToken();
+  const data = { type: formType, name, location, date, desc, contactName, contact, image: imageData, status: 'pending', posterToken };
 
   let ok;
   if (editingId) {
@@ -351,7 +378,10 @@ async function submitPost() {
     if (ok) toast('Item updated!', 'success');
   } else {
     ok = await addItem(data);
-    if (ok) toast('Post submitted! It\'s now visible to everyone.', 'success');
+    if (ok) {
+      saveMyToken(posterToken);
+      toast('Post submitted! It\'s now visible to everyone.', 'success');
+    }
   }
 
   submitBtn.textContent = '🚀 Submit Post';
@@ -387,7 +417,8 @@ function showDetail(id) {
   `;
 
   let footerBtns = `<button class="btn btn-outline" onclick="closeModal('detailModal')">Close</button>`;
-  if (item.status !== 'claimed' && !adminMode) {
+  // ── REVISED: Only poster or admin can claim ──
+  if (item.status !== 'claimed' && (adminMode || isMyItem(item))) {
     footerBtns += `<button class="btn btn-primary" onclick="claimItem('${item.id}'); closeModal('detailModal');">🏷️ Mark as Claimed</button>`;
   }
   if (adminMode && item.status !== 'removed') {
