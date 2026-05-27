@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Balik Lost &amp; Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --surface2: #f0f2f5;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --accent-dark: #1d4ed8;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --warn: #d97706;
+      --warn-light: #fffbeb;
+      --radius: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,.12);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.2rem; color: var(--accent); text-decoration: none; }
+    .nav-logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 4px; }
+    .nav-links button {
+      background: none; border: none; cursor: pointer;
+      padding: 6px 12px; border-radius: 7px;
+      font-family: inherit; font-size: 0.88rem; font-weight: 500;
+      color: var(--muted); transition: all .15s;
+    }
+    .nav-links button:hover, .nav-links button.active { background: var(--accent-light); color: var(--accent); }
+    .nav-right { display: flex; gap: 8px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #15803d; }
+    .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+
+    /* ADMIN BADGE */
+    .admin-badge { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 600; }
+
+    /* MAIN */
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 2rem; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+    .stat-card .label { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-card .value { font-size: 1.8rem; font-weight: 700; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+    .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 8px 16px; font-family: inherit; font-size: 0.88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* FILTERS */
+    .filters { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+    .filters input, .filters select {
+      padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 0.88rem; background: var(--surface); color: var(--text);
+      outline: none;
+    }
+    .filters input:focus, .filters select:focus { border-color: var(--accent); }
+    .filters input { flex: 1; min-width: 180px; }
+
+    /* GRID */
+    .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+    /* CARD */
+    .item-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: box-shadow .2s; }
+    .item-card:hover { box-shadow: var(--shadow-lg); }
+    .card-img { width: 100%; height: 160px; object-fit: cover; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .card-body { padding: 1rem; }
+    .card-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-lost { background: var(--danger-light); color: var(--danger); }
+    .badge-found { background: var(--success-light); color: var(--success); }
+    .badge-claimed { background: #f3f4f6; color: #6b7280; }
+    .badge-owner { background: var(--accent-light); color: var(--accent); }
+    .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .card-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+    .card-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+    .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* EMPTY */
+    .empty { grid-column: 1/-1; text-align: center; padding: 4rem 1rem; color: var(--muted); }
+    .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty p { font-size: 0.95rem; }
+
+    /* MODAL OVERLAY */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border-radius: 14px; width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(12px); transition: transform .2s;
+    }
+    .overlay.open .modal { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .modal-header h2 { font-size: 1.05rem; font-weight: 700; }
+    .modal-close { background: none; border: none; cursor: pointer; font-size: 1.3rem; color: var(--muted); line-height: 1; }
+    .modal-body { padding: 1.5rem; }
+    .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* FORM */
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+    .form-label span { color: var(--danger); }
+    .form-control { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; background: var(--surface); color: var(--text); outline: none; }
+    .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    textarea.form-control { resize: vertical; min-height: 90px; }
+    .type-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 1.25rem; }
+    .type-toggle label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+    .type-toggle input { display: none; }
+    .type-toggle input:checked + span { /* handled via JS */ }
+    .type-toggle label.active-lost { background: var(--danger-light); color: var(--danger); }
+    .type-toggle label.active-found { background: var(--success-light); color: var(--success); }
+
+    /* DETAIL VIEW */
+    .detail-img { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+    .detail-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+    .detail-row { display: flex; gap: 8px; margin-bottom: 6px; font-size: 0.9rem; }
+    .detail-row .key { color: var(--muted); min-width: 90px; font-weight: 500; }
+
+    /* ADMIN TABLE */
+    .admin-table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { background: var(--surface2); padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:hover td { background: var(--surface2); }
+
+    /* ALERT */
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .alert-info { background: var(--accent-light); color: var(--accent); }
+    .alert-success { background: var(--success-light); color: var(--success); }
+    .alert-danger { background: var(--danger-light); color: var(--danger); }
+    .alert-warn { background: var(--warn-light); color: var(--warn); }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 2rem; right: 1.5rem;
+      background: #1e293b; color: #fff;
+      padding: 12px 20px; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      opacity: 0; transform: translateY(8px);
+      transition: all .25s; pointer-events: none; z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* PHOTO UPLOAD */
+    .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color .15s; }
+    .upload-zone:hover { border-color: var(--accent); }
+    .upload-zone img { max-height: 150px; border-radius: 6px; }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">🔁 <span>Balik</span></a>
+    <div class="nav-links">
+      <button class="active" onclick="showTab('browse')">🔍 Browse</button>
+      <button onclick="showTab('lost')">😟 Lost</button>
+      <button onclick="showTab('found')">✅ Found</button>
+      <button onclick="showTab('claimed')">🏷️ Claimed</button>
+      <button onclick="showTab('admin')">🛡️ Admin</button>
+    </div>
+    <div class="nav-right">
+      <span id="adminBadge" class="admin-badge" style="display:none">🛡️ Admin</span>
+      <button id="adminBtn" class="btn btn-outline" onclick="openAdminLogin()">Admin Mode</button>
+      <button class="btn btn-primary" onclick="openPostModal()">+ Post Item</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card"><div class="label">Total Posts</div><div class="value" id="statTotal">0</div></div>
+    <div class="stat-card"><div class="label">Lost Items</div><div class="value" id="statLost">0</div></div>
+    <div class="stat-card"><div class="label">Found Items</div><div class="value" id="statFound">0</div></div>
+    <div class="stat-card"><div class="label">Claimed</div><div class="value" id="statClaimed">0</div></div>
+  </div>
+
+  <!-- BROWSE TAB -->
+  <div id="tab-browse">
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="🔍 Search items..." oninput="renderItems()" />
+      <select id="typeFilter" onchange="renderItems()">
+        <option value="">All Types</option>
+        <option value="lost">Lost</option>
+        <option value="found">Found</option>
+      </select>
+      <select id="dateFilter" onchange="renderItems()">
+        <option value="">All Dates</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+      </select>
+    </div>
+    <div class="items-grid" id="browseGrid"></div>
+  </div>
+
+  <!-- LOST TAB -->
+  <div id="tab-lost" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <h2 style="font-size:1.1rem;font-weight:700">😟 Lost Items</h2>
+      <button class="btn btn-primary btn-sm" onclick="openPostModal('lost')">+ Report Lost Item</button>
+    </div>
+    <div class="items-grid" id="lostGrid"></div>
+  </div>
+
+  <!-- FOUND TAB -->
+  <div id="tab-found" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <h2 style="font-size:1.1rem;font-weight:700">✅ Found Items</h2>
+      <button class="btn btn-primary btn-sm" onclick="openPostModal('found')">+ Report Found Item</button>
+    </div>
+    <div class="items-grid" id="foundGrid"></div>
+  </div>
+
+  <!-- CLAIMED TAB -->
+  <div id="tab-claimed" style="display:none">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem">🏷️ Claimed Items</h2>
+    <div class="items-grid" id="claimedGrid"></div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div id="tab-admin" style="display:none">
+    <div id="adminLocked" style="text-align:center;padding:4rem 1rem">
+      <div style="font-size:3rem;margin-bottom:1rem">🔒</div>
+      <p style="color:var(--muted);margin-bottom:1.25rem">Enable Admin Mode to access this panel</p>
+      <button class="btn btn-primary" onclick="openAdminLogin()">Login as Admin</button>
+    </div>
+    <div id="adminPanel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+        <h2 style="font-size:1.1rem;font-weight:700">🛡️ Admin Panel</h2>
+        <button class="btn btn-outline btn-sm" onclick="adminLogout()">Logout</button>
+      </div>
+      <div class="stats" style="margin-bottom:1.5rem">
+        <div class="stat-card"><div class="label">Pending</div><div class="value" id="aPending">0</div></div>
+        <div class="stat-card"><div class="label">Verified</div><div class="value" id="aVerified">0</div></div>
+        <div class="stat-card"><div class="label">Removed</div><div class="value" id="aRemoved">0</div></div>
+      </div>
+      <div class="admin-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th><th>Type</th><th>Location</th><th>Date</th><th>Contact</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ===== POST MODAL ===== -->
+<div class="overlay" id="postOverlay" onclick="closeOnBg(event,'postOverlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Post an Item</h2>
+      <button class="modal-close" onclick="closeModal('postOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="type-toggle">
+        <label id="lostLabel" class="active-lost" onclick="setType('lost')">
+          <input type="radio" name="itemType" value="lost" checked /> 😟 I Lost Something
+        </label>
+        <label id="foundLabel" onclick="setType('found')">
+          <input type="radio" name="itemType" value="found" /> ✅ I Found Something
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Item Name <span>*</span></label>
+        <input type="text" class="form-control" id="fName" placeholder="e.g. Black Wallet" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location <span>*</span></label>
+        <input type="text" class="form-control" id="fLocation" placeholder="e.g. SM City Fairview" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date <span>*</span></label>
+        <input type="date" class="form-control" id="fDate" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="fDesc" placeholder="Describe the item..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact Name <span>*</span></label>
+        <input type="text" class="form-control" id="fContact" placeholder="Your name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Contact Info <span>*</span></label>
+        <input type="text" class="form-control" id="fContactInfo" placeholder="Phone or email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photo</label>
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fPhoto').click()">
+          <div id="uploadPrompt">📷 Click to upload or drag &amp; drop<br><small style="color:var(--muted)">PNG, JPG up to 10MB</small></div>
+          <img id="photoPreview" style="display:none" />
+          <input type="file" id="fPhoto" accept="image/*" style="display:none" onchange="previewPhoto()" />
+        </div>
+      </div>
+      <div id="postError" class="alert alert-danger" style="display:none"></div>
+      <div class="alert alert-info" style="font-size:0.82rem">
+        🔑 A private <strong>claim token</strong> will be saved to your browser. Only <em>you</em> (or an admin) can mark your post as claimed.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('postOverlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPost()">🚀 Submit Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="overlay" id="detailOverlay" onclick="closeOnBg(event,'detailOverlay')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="detailTitle">Item Details</h2>
+      <button class="modal-close" onclick="closeModal('detailOverlay')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- ===== ADMIN LOGIN MODAL ===== -->
+<div class="overlay" id="adminOverlay" onclick="closeOnBg(event,'adminOverlay')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2>🛡️ Admin Login</h2>
+      <button class="modal-close" onclick="closeModal('adminOverlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1.25rem">This area is restricted to administrators only.</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" id="adminEmail" placeholder="admin@balik.ph" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" id="adminPass" placeholder="••••••••" />
+      </div>
+      <div id="adminError" class="alert alert-danger" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('adminOverlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="doAdminLogin()">🔓 Login</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   BALIK — with ownership-based claim control
+   Logic:
+   - Each item gets a unique `posterId` on creation
+   - The posterId is stored in localStorage under `balik_owned`
+   - Only the owner (matching posterId) OR an admin session can
+     see and use the "Mark as Claimed" button
+============================================================ */
+
+const ADMIN_EMAIL = 'admin@balik.ph';
+const ADMIN_PASS  = 'balik2024';
+const STORAGE_KEY = 'balik_items';
+const OWNED_KEY   = 'balik_owned'; // array of posterIds this browser posted
+const SESSION_KEY = 'balik_admin';
+
+let items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let ownedIds = JSON.parse(localStorage.getItem(OWNED_KEY) || '[]');
+let isAdmin = sessionStorage.getItem(SESSION_KEY) === 'true';
+let currentType = 'lost';
+let activeTab = 'browse';
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  localStorage.setItem(OWNED_KEY, JSON.stringify(ownedIds));
+  updateStats();
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function toast(msg, dur = 2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+function updateStats() {
+  const active = items.filter(i => !i.removed);
+  document.getElementById('statTotal').textContent   = active.length;
+  document.getElementById('statLost').textContent    = active.filter(i => i.type === 'lost').length;
+  document.getElementById('statFound').textContent   = active.filter(i => i.type === 'found').length;
+  document.getElementById('statClaimed').textContent = active.filter(i => i.status === 'claimed').length;
+  if (isAdmin) {
+    document.getElementById('aPending').textContent  = active.filter(i => i.status === 'pending').length;
+    document.getElementById('aVerified').textContent = active.filter(i => i.status === 'claimed').length;
+    document.getElementById('aRemoved').textContent  = items.filter(i => i.removed).length;
+  }
+}
+
+/* ---------- Tabs ---------- */
+function showTab(tab) {
+  activeTab = tab;
+  ['browse','lost','found','claimed','admin'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.nav-links button').forEach((btn, i) => {
+    btn.classList.toggle('active', ['browse','lost','found','claimed','admin'][i] === tab);
+  });
+  if (tab === 'admin') renderAdmin();
+  else renderItems();
+}
+
+/* ---------- Render helpers ---------- */
+function canClaim(item) {
+  if (item.status === 'claimed') return false;
+  if (isAdmin) return true;
+  return ownedIds.includes(item.posterId);
+}
+
+function canDelete(item) {
+  return isAdmin || ownedIds.includes(item.posterId);
+}
+
+function cardHTML(item) {
+  const own = ownedIds.includes(item.posterId);
+  const typeBadge = item.type === 'lost' ? '<span class="badge badge-lost">😟 Lost</span>' : '<span class="badge badge-found">✅ Found</span>';
+  const claimedBadge = item.status === 'claimed' ? '<span class="badge badge-claimed">🏷️ Claimed</span>' : '';
+  const ownerBadge = own ? '<span class="badge badge-owner">🔑 Your Post</span>' : '';
+  const photo = item.photo
+    ? `<div class="card-img"><img src="${item.photo}" alt="${escHtml(item.name)}" /></div>`
+    : `<div class="card-img">${item.type === 'lost' ? '😟' : '✅'}</div>`;
+
+  const claimBtn = canClaim(item)
+    ? `<button class="btn btn-success btn-sm" onclick="claimItem('${item.id}')">🏷️ Mark Claimed</button>`
+    : (item.status === 'claimed' ? '' : `<button class="btn btn-outline btn-sm" title="Only the poster or admin can mark this as claimed" style="cursor:not-allowed;opacity:.5" disabled>🏷️ Claim</button>`);
+
+  const delBtn = canDelete(item)
+    ? `<button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">🗑️</button>`
+    : '';
+
+  return `
+    <div class="item-card" id="card-${item.id}">
+      ${photo}
+      <div class="card-body">
+        <div class="card-tags">${typeBadge}${claimedBadge}${ownerBadge}</div>
+        <div class="card-title">${escHtml(item.name)}</div>
+        <div class="card-meta">📍 ${escHtml(item.location)} &nbsp;·&nbsp; 📅 ${item.date}</div>
+        <div class="card-desc">${escHtml(item.desc || '—')}</div>
+        <div class="card-actions">
+          <button class="btn btn-outline btn-sm" onclick="openDetail('${item.id}')">👁 View</button>
+          ${claimBtn}
+          ${delBtn}
+        </div>
+      </div>
+    </div>`;
+}
+
+function emptyHTML(msg) {
+  return `<div class="empty"><div class="icon">📭</div><p>${msg}</p></div>`;
+}
+
+function renderItems() {
+  const q    = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const type = document.getElementById('typeFilter')?.value  || '';
+  const date = document.getElementById('dateFilter')?.value  || '';
+  const now  = new Date();
+
+  function matchDate(item) {
+    if (!date) return true;
+    const d = new Date(item.date);
+    if (date === 'today')
+      return d.toDateString() === now.toDateString();
+    if (date === 'week') {
+      const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+      return d >= weekAgo;
+    }
+    if (date === 'month') {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    return true;
+  }
+
+  function matchQ(item) {
+    return !q || item.name.toLowerCase().includes(q) || (item.desc||'').toLowerCase().includes(q) || item.location.toLowerCase().includes(q);
+  }
+
+  const active = items.filter(i => !i.removed);
+
+  const render = (gridId, filterFn) => {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    const filtered = active.filter(filterFn).filter(matchQ).filter(matchDate);
+    grid.innerHTML = filtered.length ? filtered.map(cardHTML).join('') : emptyHTML('No items found.');
+  };
+
+  if (activeTab === 'browse') {
+    render('browseGrid', i => (!type || i.type === type) && i.status !== 'claimed');
+  }
+  if (activeTab === 'lost')    render('lostGrid',    i => i.type === 'lost'   && i.status !== 'claimed');
+  if (activeTab === 'found')   render('foundGrid',   i => i.type === 'found'  && i.status !== 'claimed');
+  if (activeTab === 'claimed') render('claimedGrid', i => i.status === 'claimed');
+}
+
+/* ---------- Admin render ---------- */
+function renderAdmin() {
+  const locked = document.getElementById('adminLocked');
+  const panel  = document.getElementById('adminPanel');
+  if (!isAdmin) { locked.style.display = ''; panel.style.display = 'none'; return; }
+  locked.style.display = 'none'; panel.style.display = '';
+  updateStats();
+
+  const tbody = document.getElementById('adminTableBody');
+  const visible = items.filter(i => !i.removed);
+  if (!visible.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem">No items.</td></tr>'; return; }
+
+  tbody.innerHTML = visible.map(item => {
+    const statusBadge = item.status === 'claimed'
+      ? '<span class="badge badge-claimed">Claimed</span>'
+      : '<span class="badge badge-found" style="background:var(--warn-light);color:var(--warn)">Pending</span>';
+    const claimAction = item.status !== 'claimed'
+      ? `<button class="btn btn-success btn-sm" onclick="claimItem('${item.id}')">✔ Claim</button>`
+      : '';
+    return `<tr>
+      <td><strong>${escHtml(item.name)}</strong><br><small style="color:var(--muted)">${escHtml(item.contact)}</small></td>
+      <td>${item.type === 'lost' ? '😟 Lost' : '✅ Found'}</td>
+      <td>${escHtml(item.location)}</td>
+      <td>${item.date}</td>
+      <td>${escHtml(item.contactInfo)}</td>
+      <td>${statusBadge}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="openDetail('${item.id}')">👁</button>
+        ${claimAction}
+        <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ---------- Actions ---------- */
+function claimItem(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  if (!isAdmin && !ownedIds.includes(item.posterId)) {
+    toast('⛔ Only the person who posted this item (or an admin) can mark it as claimed.');
+    return;
+  }
+
+  if (!confirm(`Mark "${item.name}" as claimed?`)) return;
+  item.status = 'claimed';
+  save();
+  toast('✅ Item marked as claimed!');
+  if (activeTab === 'admin') renderAdmin(); else renderItems();
+}
+
+function deleteItem(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  if (!isAdmin && !ownedIds.includes(item.posterId)) {
+    toast('⛔ Only the poster or admin can delete this item.');
+    return;
+  }
+  if (!confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
+  item.removed = true;
+  save();
+  toast('🗑️ Item removed.');
+  if (activeTab === 'admin') renderAdmin(); else renderItems();
+}
+
+/* ---------- Detail modal ---------- */
+function openDetail(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  const photo = item.photo
+    ? `<div class="detail-img"><img src="${item.photo}" alt="${escHtml(item.name)}" /></div>`
+    : `<div class="detail-img">${item.type === 'lost' ? '😟' : '✅'}</div>`;
+
+  const own = ownedIds.includes(item.posterId);
+  const ownerNote = own
+    ? '<div class="alert alert-info">🔑 You posted this item. Only you (or an admin) can mark it as claimed.</div>'
+    : (!isAdmin ? '<div class="alert alert-warn" style="font-size:0.82rem">⚠️ Only the original poster or admin can mark this item as claimed.</div>' : '');
+
+  document.getElementById('detailTitle').textContent = item.name;
+  document.getElementById('detailBody').innerHTML = `
+    ${photo}
+    ${ownerNote}
+    <div class="detail-row"><span class="key">Type</span> ${item.type === 'lost' ? '😟 Lost' : '✅ Found'}</div>
+    <div class="detail-row"><span class="key">Status</span> ${item.status === 'claimed' ? '🏷️ Claimed' : '⏳ Active'}</div>
+    <div class="detail-row"><span class="key">Location</span> ${escHtml(item.location)}</div>
+    <div class="detail-row"><span class="key">Date</span> ${item.date}</div>
+    <div class="detail-row"><span class="key">Contact</span> ${escHtml(item.contact)}</div>
+    <div class="detail-row"><span class="key">Info</span> ${escHtml(item.contactInfo)}</div>
+    <div class="detail-row" style="flex-direction:column"><span class="key" style="margin-bottom:4px">Description</span><span style="color:var(--muted);font-size:0.88rem;line-height:1.6">${escHtml(item.desc || 'No description provided.')}</span></div>
+    ${canClaim(item) ? `<div style="margin-top:1.25rem"><button class="btn btn-success" onclick="claimItem('${item.id}');closeModal('detailOverlay')">🏷️ Mark as Claimed</button></div>` : ''}
+  `;
+  openModal('detailOverlay');
+}
+
+/* ---------- Post modal ---------- */
+function openPostModal(type) {
+  currentType = type || 'lost';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  setType(currentType);
+  document.getElementById('fName').value = '';
+  document.getElementById('fLocation').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('fContact').value = '';
+  document.getElementById('fContactInfo').value = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('uploadPrompt').style.display = '';
+  document.getElementById('postError').style.display = 'none';
+  openModal('postOverlay');
+}
+
+function setType(t) {
+  currentType = t;
+  const lLabel = document.getElementById('lostLabel');
+  const fLabel = document.getElementById('foundLabel');
+  lLabel.className = t === 'lost'  ? 'active-lost'  : '';
+  fLabel.className = t === 'found' ? 'active-found' : '';
+}
+
+function previewPhoto() {
+  const file = document.getElementById('fPhoto').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('photoPreview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    document.getElementById('uploadPrompt').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitPost() {
+  const name        = document.getElementById('fName').value.trim();
+  const location    = document.getElementById('fLocation').value.trim();
+  const date        = document.getElementById('fDate').value;
+  const desc        = document.getElementById('fDesc').value.trim();
+  const contact     = document.getElementById('fContact').value.trim();
+  const contactInfo = document.getElementById('fContactInfo').value.trim();
+  const photoEl     = document.getElementById('photoPreview');
+  const errEl       = document.getElementById('postError');
+
+  if (!name || !location || !date || !contact || !contactInfo) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = '';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const posterId = uid();  // unique token for this poster
+  const item = {
+    id: uid(),
+    posterId,            // ← ownership token
+    type: currentType,
+    name, location, date, desc, contact, contactInfo,
+    photo: (photoEl.style.display !== 'none' && photoEl.src) ? photoEl.src : null,
+    status: 'pending',
+    removed: false,
+    createdAt: Date.now()
+  };
+
+  items.unshift(item);
+  ownedIds.push(posterId);  // ← mark this browser as owner
+  save();
+
+  closeModal('postOverlay');
+  toast('🎉 Item posted! You can mark it as claimed anytime.');
+  renderItems();
+}
+
+/* ---------- Admin auth ---------- */
+function openAdminLogin() { openModal('adminOverlay'); }
+
+function doAdminLogin() {
+  const email = document.getElementById('adminEmail').value.trim();
+  const pass  = document.getElementById('adminPass').value;
+  const errEl = document.getElementById('adminError');
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+    isAdmin = true;
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    closeModal('adminOverlay');
+    document.getElementById('adminBadge').style.display = '';
+    document.getElementById('adminBtn').textContent = '🛡️ Admin Active';
+    toast('✅ Logged in as admin.');
+    showTab('admin');
+  } else {
+    errEl.textContent = 'Invalid credentials.';
+    errEl.style.display = '';
+  }
+}
+
+function adminLogout() {
+  isAdmin = false;
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('adminBadge').style.display = 'none';
+  document.getElementById('adminBtn').textContent = 'Admin Mode';
+  toast('Logged out of admin.');
+  showTab('browse');
+}
+
+/* ---------- Modal helpers ---------- */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeOnBg(e, id) { if (e.target.id === id) closeModal(id); }
+
+/* ---------- Escape HTML ---------- */
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---------- Init ---------- */
+if (isAdmin) {
+  document.getElementById('adminBadge').style.display = '';
+  document.getElementById('adminBtn').textContent = '🛡️ Admin Active';
+}
+updateStats();
+renderItems();
+</script>
+</body>
+</html>
