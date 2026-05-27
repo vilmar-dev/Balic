@@ -1,13 +1,19 @@
 //  web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyCfqNBAV7lgA9vYRxBvwxF5EGMZeqjrXgY",
-    authDomain: "loss-and-found-2c8e4.firebaseapp.com",
-    projectId: "loss-and-found-2c8e4",
-    storageBucket: "loss-and-found-2c8e4.firebasestorage.app",
-    messagingSenderId: "462518955057",
-    appId: "1:462518955057:web:fa9ba229a3ed6ff594f910",
-    measurementId: "G-VN46LWFM7J"
-  };
+ // Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCfqNBAV7lgA9vYRxBvwxF5EGMZeqjrXgY",
+  authDomain: "loss-and-found-2c8e4.firebaseapp.com",
+  projectId: "loss-and-found-2c8e4",
+  storageBucket: "loss-and-found-2c8e4.firebasestorage.app",
+  messagingSenderId: "462518955057",
+  appId: "1:462518955057:web:fa9ba229a3ed6ff594f910",
+  measurementId: "G-VN46LWFM7J"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // ============================================================
 // FIREBASE INIT
